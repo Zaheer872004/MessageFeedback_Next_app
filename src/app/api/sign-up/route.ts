@@ -1,6 +1,4 @@
 
-
-
 import dbConnect from "@/lib/dbConnect";
 
 import UserModel from "@/model/User";
@@ -9,13 +7,46 @@ import bcrypt from 'bcryptjs'
 
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 
+import { signUpSchema } from "@/schemas/signUpSchema";
+import { z } from "zod";
+
+
+const signUpVerificationQuerySchema = z.object({
+     userData : signUpSchema
+})
+
 export async function POST (request:Request ){
     // firstly established a connection to the database
     await dbConnect()
 
+
+
     try {
+
+
+        // const userData = await request.json()
         const { username, email, password } = await request.json()
 
+        const userData = {username,email,password}
+
+        const result = signUpVerificationQuerySchema.safeParse({userData})
+
+        if(!result.success){
+            return Response.json({
+                success : false,
+                message : `Please provide valid username,email,password `
+            })
+        }
+
+        // if(!username || !email || !password){
+        //     return Response.json({
+        //         success : false,
+        //         message : ` Please provider full credentials `
+        //     },{status : 400})
+        // }
+
+
+        // checked for the username exists with verification if yes return error
         const existingUserVerifiedByUsername = await UserModel.findOne(
             {
                 username,
@@ -35,15 +66,17 @@ export async function POST (request:Request ){
             )
         }
 
-        const existingUserByEmail = await UserModel.findOne({email})
-
         // VerifyCode
         const verifyCode = Math.floor(100000 + Math.random() * 100000).toString();
-
+        
+        // check the  email exist already if yes return response with error
+        const existingUserByEmail = await UserModel.findOne({email})
 
         if( existingUserByEmail ){
             // true // TODO : Back here
             // check IsVerified if not then you can do verify that email,
+
+            // if yes then return response with email already exist
             if(existingUserByEmail.isVerified){
                 return Response.json(
                     {
@@ -59,7 +92,7 @@ export async function POST (request:Request ){
 
                 existingUserByEmail.password = hashPassword;
                 existingUserByEmail.verifyCode = verifyCode;
-                existingUserByEmail.verifyCodeExpiry = new Date(Date.now() * 5 * 60 * 1000);
+                existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 60 * 60 * 1000); // 5min.
 
                 await existingUserByEmail.save();
 
@@ -70,8 +103,9 @@ export async function POST (request:Request ){
             const hashPassword = await bcrypt.hash(password,10)
 
             // here expiryDate of the otpVerify
-            const expiryDate = new Date()
-            expiryDate.setHours(expiryDate.getHours() *5*60*1000)   // means 5 minutes or 300 second
+
+            // const expiryDate = new Date()
+            // expiryDate.setHours(expiryDate.getHours() *5*60*1000)   // means 5 minutes or 300 second
 
 
             const newUser = new UserModel({
@@ -79,7 +113,7 @@ export async function POST (request:Request ){
                 email,
                 password : hashPassword,
                 verifyCode,
-                verifyCodeExpiry : expiryDate,
+             verifyCodeExpiry: new Date(Date.now() + 60 * 60 * 1000),
                 isVerified : false,
                 isAcceptingMessage : true,
                 messages : []
@@ -92,7 +126,10 @@ export async function POST (request:Request ){
         // send verification Email 
         const emailResponse = await sendVerificationEmail(email, username, verifyCode);
 
+        console.log(`email response is this : `,emailResponse)
+ 
         if(!emailResponse.success){
+ 
             return Response.json({
                 success : false,
                 message: emailResponse.message
@@ -103,7 +140,7 @@ export async function POST (request:Request ){
             )
         }
 
-
+        console.log(existingUserByEmail?.verifyCode);
         return Response.json({
             success : true,
             message: `User registered Successfully. Please verify your email`

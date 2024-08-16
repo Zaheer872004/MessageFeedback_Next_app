@@ -70,10 +70,10 @@ export const authOptions : NextAuthOptions = {
                 }
             }
         }),
-        GoogleProvider({
-            clientId: process.env.GOOGLE_ID as string,
-            clientSecret: process.env.GOOGLE_SECRET as string
-        }),
+        // GoogleProvider({
+        //     clientId: process.env.GOOGLE_ID as string,
+        //     clientSecret: process.env.GOOGLE_SECRET as string
+        // }),
         // GitHubProvider({
         //     clientId: process.env.GITHUB_ID as string,
         //     clientSecret: process.env.GITHUB_SECRET as string
@@ -121,7 +121,7 @@ export const authOptions : NextAuthOptions = {
     },
 
     pages : {
-        signIn : '/sign-in'
+        signIn : '/log-in'
     },
     session : {
         strategy : "jwt"

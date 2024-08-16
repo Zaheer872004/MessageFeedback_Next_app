@@ -7,12 +7,13 @@ export async function sendVerificationEmail(
     email: string,
     username : string,
     verifyCode : string,
-): Promise<ApiResponse>{
+) : Promise<ApiResponse> {
+
     try {
         await resend.emails.send({
             from : 'onboarding@resend.dev',
             to: email,
-            subject:'Quml.ai | Verification Code',
+            subject:'Feedback Application | Verification Code',
             react: VerificationEmailTemplate({
                 username , 
                 otp: verifyCode,
@@ -23,7 +24,7 @@ export async function sendVerificationEmail(
 
         return {
             success: true,
-            message:`Email send successfully to ${username}`,
+            message:`Email send successfully to ${username} from Feedback Application `,
 
         }
     } catch (emailError) {
