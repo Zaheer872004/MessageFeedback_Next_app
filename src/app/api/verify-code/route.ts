@@ -25,20 +25,20 @@ export async function POST(request: Request) {
 
     const decodedUsername = decodeURIComponent(username);
 
-    const result = verifyCodeQuerySchema.safeParse({code ,username});
+    // const result = verifyCodeQuerySchema.safeParse({code ,username});
 
-    console.log(result)
-    if(!result.success){
-        console.error(result.error); // Log the errors
-        return Response.json(
-            {
-                success : false,
-                message: 'Provide valid verify Code'
-            },{
-                status : 404
-            }
-        )
-    }
+    // console.log(result)
+    // if(result.error){
+    //     console.error(result.error); // Log the errors
+    //     return Response.json(
+    //         {
+    //             success : false,
+    //             message: 'Provide valid verify Code'
+    //         },{
+    //             status : 404
+    //         }
+    //     )
+    // }
 
     let user = await UserModel.findOne({ username:decodedUsername });
 

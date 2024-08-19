@@ -30,17 +30,23 @@ export const authOptions : NextAuthOptions = {
                     label : "Password",
                     type : "password",
                     placeholder : "******"
-                }
+                },
+                // here you can add the role also.
             },
             async authorize(credentials : any): Promise<any>{
                 // firstly connect to the db
                 await dbConnect()
                 
+
+
                 try {
+
+                    // const { username,email,password} = credentials
+
                     const user = await UserModel.findOne({
                         $or : [
-                            {email : credentials.identifier.email},
-                            {username : credentials.identifier.username}
+                            {email : credentials.identifier},
+                            {username : credentials.identifier}
                         ] 
                     })
 
@@ -66,7 +72,7 @@ export const authOptions : NextAuthOptions = {
 
                 } catch (err : any) {
                     
-                    throw new Error(err);
+                    throw new Error('login server error ',err);
                 }
             }
         }),
@@ -121,7 +127,7 @@ export const authOptions : NextAuthOptions = {
     },
 
     pages : {
-        signIn : '/log-in'
+        signIn : '/sign-in'
     },
     session : {
         strategy : "jwt"
